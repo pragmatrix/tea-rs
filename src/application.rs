@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 ///       function can not be boxed, because we need to clone it.
 pub struct Application<S, E, N>
 where
-    S: Component<S, E>,
+    S: Component<E>,
     E: Send,
 {
     state: S,
@@ -17,7 +17,7 @@ where
 
 impl<S, E, N> Application<S, E, N>
 where
-    S: Component<S, E>,
+    S: Component<E>,
     E: 'static + Send,
     N: Fn() -> () + 'static + Send + Clone,
 {
