@@ -1,4 +1,4 @@
-/// A command to run asynchronously that feeds back an event to the component from where it was invoked.
+/// A command that runs asynchronously and sends back an event to the application.
 /// TODO: can we make the internal cases private so that we can unpack it when necessary?
 pub enum Cmd<E> {
     None,
@@ -21,9 +21,8 @@ where
     E: 'static,
 {
     // TODO: can we make f / F non-Send?
-    pub fn map<'a, F, E2>(self, f: F) -> Cmd<E2>
+    pub fn map<E2>(self, f: impl Fn(E) -> E2 + 'static + Send + Clone) -> Cmd<E2>
     where
-        F: Fn(E) -> E2 + 'static + Send + Clone,
         E2: 'static,
     {
         match self {
