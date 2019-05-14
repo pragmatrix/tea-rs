@@ -33,16 +33,16 @@ where
     }
 
     /// Schedule an event. Note that this does not call update(),
-    /// neither invoke the notification notify callback,
+    /// and neither invokes the notification callback,
     /// the client has to take care of that.
     pub fn schedule(&mut self, event: E) -> &mut Self {
         self.pending.lock().unwrap().push(event);
         self
     }
 
-    /// Notify the external callback that onr or more new
-    /// eventa are pending. This directly calls the notification callback
-    /// and does nothing else, expecting that the client calls update() in
+    /// Notify the external callback that one or more new
+    /// events are pending. This directly calls the notification callback
+    /// and does nothing else, expecting that the client to call update() in
     /// turn.
     pub fn notify(&self) -> &Self {
         (self.notify)();
@@ -68,7 +68,7 @@ where
         self
     }
 
-    /// Returns the current state of the application.
+    /// The current state of the application.
     pub fn state(&self) -> &S {
         &self.state
     }
