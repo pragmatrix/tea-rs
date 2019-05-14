@@ -28,7 +28,7 @@ where
             state,
             executor: Box::new(executor),
             notify,
-            pending: Arc::new(Mutex::new(Vec::new())),
+            pending: Arc::default(),
         }
     }
 
