@@ -2,17 +2,14 @@ use crate::{Component, Executor};
 use std::sync::{Arc, Mutex};
 
 /// Application
-/// TODO: do we need to be generic over S here?
 /// TODO: we use N here because the notification
 ///       function can not be boxed, because we need to clone it.
-/// TODO: Can we abstract this generic monster away, afer all it's all private e.g.
-///       hide / box behind a trait that is only generic over E.
 pub struct Application<S, E, N>
 where
     S: Component<S, E>,
     E: Send,
 {
-    state: Box<Component<S, E>>,
+    state: S,
     executor: Box<Executor>,
     notify: N,
     pending: Arc<Mutex<Vec<E>>>,
@@ -24,16 +21,11 @@ where
     E: 'static + Send,
     N: Fn() -> () + 'static + Send + Clone,
 {
-    /// Creates an application from a component and an executor,
+    /// Creates an application from a state that implements Component, an executor,
     /// and a asynchronous callback the informs when update should be called.
-
-    pub fn new(
-        root: impl Component<S, E> + 'static,
-        executor: impl Executor + 'static,
-        notify: N,
-    ) -> Application<S, E, N> {
+    pub fn new(state: S, executor: impl Executor + 'static, notify: N) -> Application<S, E, N> {
         Application {
-            state: Box::new(root),
+            state,
             executor: Box::new(executor),
             notify,
             pending: Arc::new(Mutex::new(Vec::new())),
@@ -74,5 +66,10 @@ where
             }
         }
         self
+    }
+
+    /// Returns the current state of the application.
+    pub fn state(&self) -> &S {
+        &self.state
     }
 }
