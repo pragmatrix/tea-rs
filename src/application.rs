@@ -1,4 +1,5 @@
-use crate::{Executor, Model};
+use crate::{Cmd, Executor, Model};
+use std::mem;
 use std::sync::{Arc, Mutex};
 
 /// Application
@@ -35,11 +36,42 @@ where
         }
     }
 
-    /// Schedule an event. Note that this does not call update(),
+    /// Post an event. Note that this does not call update(),
     /// and neither invokes the notification callback,
     /// the client has to take care of that.
-    pub fn schedule(&mut self, event: E) -> &mut Self {
+    pub fn post(&mut self, event: E) -> &mut Self {
         self.pending.lock().unwrap().push(event);
+        self
+    }
+
+    /// Update the application's state. This delivers pending events and
+    /// schedules the commands to the executor.
+    pub fn update(&mut self) -> &mut Self {
+        let events = mem::replace(&mut *self.pending.lock().unwrap(), Vec::new());
+        for e in events {
+            let cmd = self.model.update(e);
+            self.schedule(cmd);
+        }
+        self
+    }
+
+    /// Schedule a command. This can be used to set up an initial
+    /// asynchronous command, or to schedule some commands externally to
+    /// avoid introducing new application events.
+    /// This function's self reference is mutable, because it needs the
+    /// executor that runs the command to be mutable.
+    // TODO: can we remove the mutability here and from the executor?
+    pub fn schedule(&mut self, cmd: Cmd<E>) -> &mut Self {
+        for f in cmd.unpack() {
+            let notify = self.notifier.clone_boxed();
+            let pending = self.pending.clone();
+            let async_fn = move || {
+                let r = f();
+                pending.lock().unwrap().push(r);
+                notify();
+            };
+            self.executor.spawn(Box::new(async_fn));
+        }
         self
     }
 
@@ -49,25 +81,6 @@ where
     /// turn.
     pub fn notify(&self) -> &Self {
         self.notifier.clone_boxed()();
-        self
-    }
-
-    /// Update the application's state. This delivers pending events and
-    /// schedules the commands to the executor.
-    pub fn update(&mut self) -> &mut Self {
-        for e in self.pending.lock().unwrap().drain(..) {
-            let cmd = self.model.update(e);
-            for f in cmd.unpack() {
-                let notify = self.notifier.clone_boxed();
-                let pending = self.pending.clone();
-                let async_fn = move || {
-                    let r = f();
-                    pending.lock().unwrap().push(r);
-                    notify();
-                };
-                self.executor.spawn(Box::new(async_fn));
-            }
-        }
         self
     }
 
