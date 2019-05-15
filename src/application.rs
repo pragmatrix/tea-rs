@@ -71,10 +71,10 @@ where
     pub fn schedule(&mut self, cmd: Cmd<E>) -> &mut Self {
         for f in cmd.unpack() {
             let notify = self.notifier.clone_boxed();
-            let pending = self.mailbox.clone();
+            let mailbox = self.mailbox.clone();
             let async_fn = move || {
                 let r = f();
-                pending.lock().unwrap().push(r);
+                mailbox.lock().unwrap().push(r);
                 notify();
             };
             self.executor.spawn(Box::new(async_fn));
