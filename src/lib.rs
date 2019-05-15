@@ -24,6 +24,12 @@ use std::thread;
 /// A simple executor that uses std::thread::spawn.
 pub struct ThreadSpawnExecutor {}
 
+impl Default for ThreadSpawnExecutor {
+    fn default() -> Self {
+        ThreadSpawnExecutor {}
+    }
+}
+
 impl Executor for ThreadSpawnExecutor {
     fn spawn(&mut self, f: Box<dyn Fn() + Send>) {
         let _jh = thread::spawn(move || f());
