@@ -4,31 +4,31 @@ use std::sync::{Arc, Mutex};
 /// Application
 /// TODO: we use N here because the notification
 ///       function can not be boxed because we need to clone it.
-pub struct Application<S, E>
+pub struct Application<M, E>
 where
-    S: Model<E>,
+    M: Model<E>,
     E: 'static + Send,
 {
-    state: S,
+    model: M,
     executor: Box<Executor>,
     notifier: Box<Notifier>,
     pending: Arc<Mutex<Vec<E>>>,
 }
 
-impl<S, E> Application<S, E>
+impl<M, E> Application<M, E>
 where
-    S: Model<E>,
+    M: Model<E>,
     E: 'static + Send,
 {
     /// Creates an application from a state that implements model, an executor,
     /// and a asynchronous notifier the informs when update should be called.
     pub fn new(
-        state: S,
+        model: M,
         executor: impl Executor + 'static,
         notifier: impl Fn() -> () + Send + 'static + Clone,
-    ) -> Application<S, E> {
+    ) -> Application<M, E> {
         Application {
-            state,
+            model,
             executor: Box::new(executor),
             notifier: Box::new(NotifierHandle(notifier)),
             pending: Arc::default(),
@@ -56,7 +56,7 @@ where
     /// schedules the commands to the executor.
     pub fn update(&mut self) -> &mut Self {
         for e in self.pending.lock().unwrap().drain(..) {
-            let cmd = self.state.update(e);
+            let cmd = self.model.update(e);
             for f in cmd.unpack() {
                 let notify = self.notifier.clone_boxed();
                 let pending = self.pending.clone();
@@ -71,9 +71,9 @@ where
         self
     }
 
-    /// The current state of the application.
-    pub fn state(&self) -> &S {
-        &self.state
+    /// The current model state of the application.
+    pub fn model(&self) -> &M {
+        &self.model
     }
 }
 
