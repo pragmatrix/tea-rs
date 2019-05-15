@@ -82,17 +82,17 @@ where
 // TODO: can this simplified?
 //
 
-struct NotifierHandle<F>(F);
+struct NotifierHandle<F: 'static>(F);
 
 trait Notifier {
-    fn clone_boxed(&self) -> Box<Fn() + Send + 'static>;
+    fn clone_boxed(&self) -> Box<Fn() + Send>;
 }
 
 impl<F> Notifier for NotifierHandle<F>
 where
-    F: Fn() + Send + 'static + Clone,
+    F: Fn() + Send + Clone,
 {
-    fn clone_boxed(&self) -> Box<Fn() + Send + 'static> {
+    fn clone_boxed(&self) -> Box<Fn() + Send> {
         Box::new(self.0.clone())
     }
 }
