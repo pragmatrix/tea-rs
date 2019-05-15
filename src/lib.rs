@@ -32,11 +32,10 @@ impl Executor for ThreadSpawnExecutor {
 
 /// Implement `View<R>` for an application if the application's model
 /// implements a `View<R>`.
-impl<R, S, E, N> View<R> for Application<S, E, N>
+impl<S, E, R> View<R> for Application<S, E>
 where
     S: Model<E> + View<R>,
     E: 'static + Send,
-    N: Fn() -> () + 'static + Send + Clone,
 {
     fn render(&self) -> R {
         self.state().render()

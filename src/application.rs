@@ -4,31 +4,33 @@ use std::sync::{Arc, Mutex};
 /// Application
 /// TODO: we use N here because the notification
 ///       function can not be boxed because we need to clone it.
-pub struct Application<S, E, N>
+pub struct Application<S, E>
 where
     S: Model<E>,
     E: 'static + Send,
-    N: Fn() -> () + 'static + Send + Clone,
 {
     state: S,
     executor: Box<Executor>,
-    notify: N,
+    notifier: Box<Notifier>,
     pending: Arc<Mutex<Vec<E>>>,
 }
 
-impl<S, E, N> Application<S, E, N>
+impl<S, E> Application<S, E>
 where
     S: Model<E>,
     E: 'static + Send,
-    N: Fn() -> () + 'static + Send + Clone,
 {
     /// Creates an application from a state that implements model, an executor,
-    /// and a asynchronous callback the informs when update should be called.
-    pub fn new(state: S, executor: impl Executor + 'static, notify: N) -> Application<S, E, N> {
+    /// and a asynchronous notifier the informs when update should be called.
+    pub fn new(
+        state: S,
+        executor: impl Executor + 'static,
+        notifier: impl Fn() -> () + Send + 'static + Clone,
+    ) -> Application<S, E> {
         Application {
             state,
             executor: Box::new(executor),
-            notify,
+            notifier: Box::new(NotifierHandle(notifier)),
             pending: Arc::default(),
         }
     }
@@ -46,7 +48,7 @@ where
     /// and does nothing else, expecting that the client to call update() in
     /// turn.
     pub fn notify(&self) -> &Self {
-        (self.notify)();
+        self.notifier.clone_boxed()();
         self
     }
 
@@ -56,7 +58,7 @@ where
         for e in self.pending.lock().unwrap().drain(..) {
             let cmd = self.state.update(e);
             for f in cmd.unpack() {
-                let notify = self.notify.clone();
+                let notify = self.notifier.clone_boxed();
                 let pending = self.pending.clone();
                 let async_fn = move || {
                     let r = f();
@@ -72,5 +74,25 @@ where
     /// The current state of the application.
     pub fn state(&self) -> &S {
         &self.state
+    }
+}
+
+//
+// Support to hide a clonable function behind a trait object.
+// TODO: can this simplified?
+//
+
+struct NotifierHandle<F>(F);
+
+trait Notifier {
+    fn clone_boxed(&self) -> Box<Fn() + Send + 'static>;
+}
+
+impl<F> Notifier for NotifierHandle<F>
+where
+    F: Fn() + Send + 'static + Clone,
+{
+    fn clone_boxed(&self) -> Box<Fn() + Send + 'static> {
+        Box::new(self.0.clone())
     }
 }
