@@ -21,7 +21,7 @@ pub use view::*;
 
 use std::thread;
 
-/// A simple exector that uses std::thread::spawn.
+/// A simple executor that uses std::thread::spawn.
 pub struct ThreadSpawnExecutor {}
 
 impl Executor for ThreadSpawnExecutor {
@@ -30,7 +30,7 @@ impl Executor for ThreadSpawnExecutor {
     }
 }
 
-/// Implement `View<R>` for an application if the application's model
+/// Implements `View<R>` for all applications of which its model
 /// implements a `View<R>`.
 impl<S, E, R> View<R> for Application<S, E>
 where
