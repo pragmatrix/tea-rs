@@ -2,7 +2,7 @@
 //!
 //! Differences to the Elm architecture:
 //! - States are mutable, we trust Rust.
-//! - No predefined HTML view, any model may support multiple views.
+//! - View type agnostic, and models may support multiple views.
 
 mod application;
 pub use application::*;
