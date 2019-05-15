@@ -1,4 +1,4 @@
-use crate::{Component, Executor};
+use crate::{Executor, Model};
 use std::sync::{Arc, Mutex};
 
 /// Application
@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 ///       function can not be boxed because we need to clone it.
 pub struct Application<S, E, N>
 where
-    S: Component<E>,
+    S: Model<E>,
     E: 'static + Send,
     N: Fn() -> () + 'static + Send + Clone,
 {
@@ -18,11 +18,11 @@ where
 
 impl<S, E, N> Application<S, E, N>
 where
-    S: Component<E>,
+    S: Model<E>,
     E: 'static + Send,
     N: Fn() -> () + 'static + Send + Clone,
 {
-    /// Creates an application from a state that implements Component, an executor,
+    /// Creates an application from a state that implements model, an executor,
     /// and a asynchronous callback the informs when update should be called.
     pub fn new(state: S, executor: impl Executor + 'static, notify: N) -> Application<S, E, N> {
         Application {

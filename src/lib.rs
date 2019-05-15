@@ -2,7 +2,7 @@
 //!
 //! Differences to the Elm architecture:
 //! - States are mutable, we trust Rust.
-//! - No predefined HTML view model, any component may support multiple view models.
+//! - No predefined HTML view, any model may support multiple views.
 
 mod application;
 pub use application::*;
@@ -10,8 +10,8 @@ pub use application::*;
 mod cmd;
 pub use cmd::*;
 
-mod component;
-pub use component::*;
+mod model;
+pub use model::*;
 
 mod executor;
 pub use executor::*;
@@ -30,11 +30,11 @@ impl Executor for ThreadSpawnExecutor {
     }
 }
 
-/// Implement `View<R>` for an application if the application's component
+/// Implement `View<R>` for an application if the application's model
 /// implements a `View<R>`.
 impl<R, S, E, N> View<R> for Application<S, E, N>
 where
-    S: Component<E> + View<R>,
+    S: Model<E> + View<R>,
     E: 'static + Send,
     N: Fn() -> () + 'static + Send + Clone,
 {

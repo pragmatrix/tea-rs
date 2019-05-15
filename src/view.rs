@@ -1,4 +1,4 @@
-/// A view can be attached to any component. A component can
+/// A view can be attached to any model. A model can
 /// support multiple views as long they are rendering a different
 /// type of data.
 pub trait View<R> {
