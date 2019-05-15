@@ -26,7 +26,7 @@ where
     pub fn new(
         model: M,
         executor: impl Executor + 'static,
-        notifier: impl Fn() -> () + Send + 'static + Clone,
+        notifier: impl Fn() + Send + 'static + Clone,
     ) -> Application<M, E> {
         Application {
             model,

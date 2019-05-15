@@ -25,7 +25,7 @@ use std::thread;
 pub struct ThreadSpawnExecutor {}
 
 impl Executor for ThreadSpawnExecutor {
-    fn spawn(&mut self, f: Box<dyn Fn() -> () + 'static + Send>) {
+    fn spawn(&mut self, f: Box<dyn Fn() + Send>) {
         let _jh = thread::spawn(move || f());
     }
 }
