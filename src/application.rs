@@ -1,13 +1,14 @@
-use crate::{Component, Executor};
+use crate::{Component, Executor, View};
 use std::sync::{Arc, Mutex};
 
 /// Application
 /// TODO: we use N here because the notification
-///       function can not be boxed, because we need to clone it.
+///       function can not be boxed because we need to clone it.
 pub struct Application<S, E, N>
 where
     S: Component<E>,
-    E: Send,
+    E: 'static + Send,
+    N: Fn() -> () + 'static + Send + Clone,
 {
     state: S,
     executor: Box<Executor>,
@@ -49,7 +50,7 @@ where
         self
     }
 
-    /// Update the application's state. This delivers _all_ pending events and
+    /// Update the application's state. This delivers pending events and
     /// schedules the commands to the executor.
     pub fn update(&mut self) -> &mut Self {
         for e in self.pending.lock().unwrap().drain(..) {
