@@ -8,9 +8,9 @@ where
     M: Model<E>,
     E: 'static + Send,
 {
+    mailbox: Mailbox<E>,
     model: M,
     executor: Box<Executor>,
-    mailbox: Mailbox<E>,
 }
 
 impl<M, E> Application<M, E>
@@ -22,9 +22,9 @@ where
     /// and a asynchronous notifier the informs when update should be called.
     pub fn new(model: M, executor: impl Executor + 'static) -> Application<M, E> {
         Application {
+            mailbox: Mailbox::new(),
             model,
             executor: Box::new(executor),
-            mailbox: Mailbox::new(),
         }
     }
 
@@ -69,7 +69,7 @@ where
         self
     }
 
-    /// The current model state of the application.
+    /// The current model of the application.
     pub fn model(&self) -> &M {
         &self.model
     }
