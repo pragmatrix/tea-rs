@@ -10,11 +10,14 @@ pub use application::*;
 mod cmd;
 pub use cmd::*;
 
-mod model;
-pub use model::*;
-
 mod executor;
 pub use executor::*;
+
+mod mailbox;
+pub use mailbox::*;
+
+mod model;
+pub use model::*;
 
 mod view;
 pub use view::*;
