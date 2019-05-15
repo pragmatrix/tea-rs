@@ -106,7 +106,7 @@ where
 
 struct NotifierHandle<F: 'static>(F);
 
-trait Notifier {
+trait Notifier: Send {
     fn clone_boxed(&self) -> Box<Fn() + Send>;
 }
 
