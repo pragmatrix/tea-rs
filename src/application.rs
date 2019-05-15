@@ -1,4 +1,4 @@
-use crate::{Component, Executor, View};
+use crate::{Component, Executor};
 use std::sync::{Arc, Mutex};
 
 /// Application
