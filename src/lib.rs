@@ -38,6 +38,6 @@ where
     E: 'static + Send,
 {
     fn render(&self) -> R {
-        self.state().render()
+        self.model().render()
     }
 }
