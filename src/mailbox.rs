@@ -18,7 +18,7 @@ impl<E: Send> Mailbox<E> {
         let &(ref lock, ref cvar) = &*self.0;
         let mut v = lock.lock().unwrap();
         v.push(e);
-        cvar.notify_one()
+        cvar.notify_one();
     }
 
     pub(crate) fn take_all(&self) -> Vec<E> {
