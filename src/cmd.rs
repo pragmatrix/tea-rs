@@ -1,29 +1,29 @@
 /// A command that runs asynchronously and sends back an event to the application.
 /// TODO: can we make the internal cases private so that we can unpack it when necessary?
-pub enum Cmd<E> {
+pub enum Cmd<M> {
     None,
-    Fn(Box<dyn Fn() -> E + Send>),
-    Batch(Vec<Cmd<E>>),
+    Fn(Box<dyn Fn() -> M + Send>),
+    Batch(Vec<Cmd<M>>),
 }
 
-impl<F, E> From<F> for Cmd<E>
+impl<F, M> From<F> for Cmd<M>
 where
-    F: Fn() -> E + 'static + Send,
-    E: 'static,
+    F: Fn() -> M + 'static + Send,
+    M: 'static,
 {
     fn from(f: F) -> Self {
         Cmd::Fn(Box::new(f))
     }
 }
 
-impl<E> Cmd<E>
+impl<M> Cmd<M>
 where
-    E: 'static,
+    M: 'static,
 {
     // TODO: can we make f / F non-Send?
-    pub fn map<E2>(self, f: impl Fn(E) -> E2 + 'static + Send + Clone) -> Cmd<E2>
+    pub fn map<M2>(self, f: impl Fn(M) -> M2 + 'static + Send + Clone) -> Cmd<M2>
     where
-        E2: 'static,
+        M2: 'static,
     {
         match self {
             Cmd::None => Cmd::None,
@@ -32,8 +32,8 @@ where
         }
     }
 
-    pub(crate) fn unpack(self) -> Vec<Box<dyn Fn() -> E + Send>> {
-        fn unpack<E>(cmd: Cmd<E>, v: &mut Vec<Box<dyn Fn() -> E + Send>>) {
+    pub(crate) fn unpack(self) -> Vec<Box<dyn Fn() -> M + Send>> {
+        fn unpack<M>(cmd: Cmd<M>, v: &mut Vec<Box<dyn Fn() -> M + Send>>) {
             match cmd {
                 Cmd::None => {}
                 Cmd::Fn(fe) => v.push(fe),

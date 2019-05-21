@@ -1,9 +1,9 @@
 use crate::Cmd;
 
 /// A model.
-pub trait Model<E: Send> {
+pub trait Model<Msg: Send> {
     /// The update function updates the current state of the model.
-    /// It applies the event to it and returns a command that is executed
-    /// asynchronously and sends back an event when finished.
-    fn update(&mut self, event: E) -> Cmd<E>;
+    /// It applies the msg to it and returns a command that is executed
+    /// asynchronously and sends back an msg when finished.
+    fn update(&mut self, msg: Msg) -> Cmd<Msg>;
 }

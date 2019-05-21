@@ -3,24 +3,24 @@ use crate::{Cmd, Executor, Mailbox, Model};
 /// Application.
 /// TODO: we use N here because the notification
 ///       function can not be boxed because we need to clone it.
-pub struct Application<M, E>
+pub struct Application<M, Msg>
 where
-    M: Model<E>,
-    E: 'static + Send,
+    M: Model<Msg>,
+    Msg: 'static + Send,
 {
-    mailbox: Mailbox<E>,
+    mailbox: Mailbox<Msg>,
     model: M,
     executor: Box<Executor>,
 }
 
-impl<M, E> Application<M, E>
+impl<M, Msg> Application<M, Msg>
 where
-    M: Model<E>,
-    E: 'static + Send,
+    M: Model<Msg>,
+    Msg: 'static + Send,
 {
     /// Creates an application from a state that implements model, an executor,
     /// and a asynchronous notifier the informs when update should be called.
-    pub fn new(model: M, executor: impl Executor + 'static) -> Application<M, E> {
+    pub fn new(model: M, executor: impl Executor + 'static) -> Application<M, Msg> {
         Application {
             mailbox: Mailbox::new(),
             model,
@@ -28,21 +28,21 @@ where
         }
     }
 
-    /// Returns a mailbox that can be used to post events to.
+    /// Returns a mailbox that can be used to post messages to.
     ///
     /// The mailbox returned can cloned and send to other threads.
-    pub fn mailbox(&self) -> Mailbox<E> {
+    pub fn mailbox(&self) -> Mailbox<Msg> {
         self.mailbox.clone()
     }
 
     /// Update the application's state.
     ///
-    /// This function waits for events from the mailbox, delivers them to the
+    /// This function waits for messages from the mailbox, delivers them to the
     /// model and schedules the commands to the executor.
     pub fn update(&mut self) -> &mut Self {
-        let events = self.mailbox.take_all();
-        for e in events {
-            let cmd = self.model.update(e);
+        let messages = self.mailbox.take_all();
+        for msg in messages {
+            let cmd = self.model.update(msg);
             self.schedule(cmd);
         }
         self
@@ -52,12 +52,12 @@ where
     ///
     /// This function can be used to initiate an initial
     /// asynchronous command, or to schedule some commands externally to
-    /// avoid introducing new application events.
+    /// avoid introducing new application messages.
     ///
     /// This function's self reference is mutable, because it needs the
     /// executor that runs the command to be mutable.
     // TODO: can we remove the mutability here and from the executor?
-    pub fn schedule(&mut self, cmd: Cmd<E>) -> &mut Self {
+    pub fn schedule(&mut self, cmd: Cmd<Msg>) -> &mut Self {
         for f in cmd.unpack() {
             let mailbox = self.mailbox.clone();
             let async_fn = move || {

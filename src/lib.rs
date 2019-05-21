@@ -41,10 +41,10 @@ impl Executor for ThreadSpawnExecutor {
 
 /// Implements `View<R>` for all applications of which its model
 /// implements a `View<R>`.
-impl<S, E, R> View<R> for Application<S, E>
+impl<S, M, R> View<R> for Application<S, M>
 where
-    S: Model<E> + View<R>,
-    E: 'static + Send,
+    S: Model<M> + View<R>,
+    M: 'static + Send,
 {
     fn render(&self) -> R {
         self.model().render()
