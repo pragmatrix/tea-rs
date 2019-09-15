@@ -10,7 +10,7 @@ where
 {
     mailbox: Mailbox<Msg>,
     model: M,
-    executor: Box<Executor>,
+    executor: Box<dyn Executor>,
 }
 
 impl<M, Msg> Application<M, Msg>
