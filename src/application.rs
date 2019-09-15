@@ -18,8 +18,8 @@ where
     M: Model<Msg>,
     Msg: 'static + Send,
 {
-    /// Creates an application from a state that implements model, an executor,
-    /// and a asynchronous notifier the informs when update should be called.
+    /// Creates an application from a state that starts with a model and needs an executor
+    /// to schedule asynchronous code.
     pub fn new(model: M, executor: impl Executor + 'static) -> Application<M, Msg> {
         Application {
             mailbox: Mailbox::new(),
@@ -50,9 +50,7 @@ where
 
     /// Schedule a command to the executor.
     ///
-    /// This function can be used to initiate an initial
-    /// asynchronous command, or to schedule some commands externally to
-    /// avoid introducing new application messages.
+    /// This function can be used to schedule asynchronous commands.
     ///
     /// This function's self reference is mutable, because it needs the
     /// executor that runs the command to be mutable.
