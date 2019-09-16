@@ -10,7 +10,7 @@ impl<M: Send> Clone for Mailbox<M> {
 }
 
 impl<M: Send> Mailbox<M> {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Mailbox(Arc::default())
     }
 

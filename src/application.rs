@@ -18,11 +18,14 @@ where
     M: Model<Msg>,
     Msg: 'static + Send,
 {
-    /// Creates an application from a state that starts with a model and needs an executor
-    /// to schedule asynchronous code.
-    pub fn new(model: M, executor: impl Executor + 'static) -> Application<M, Msg> {
+    /// Creates an application from a mailbox, an initial state and an executor.
+    pub fn new(
+        mailbox: Mailbox<Msg>,
+        model: M,
+        executor: impl Executor + 'static,
+    ) -> Application<M, Msg> {
         Application {
-            mailbox: Mailbox::new(),
+            mailbox,
             model,
             executor: Box::new(executor),
         }
@@ -30,7 +33,7 @@ where
 
     /// Returns a mailbox that can be used to post messages to.
     ///
-    /// The mailbox returned can cloned and send to other threads.
+    /// The mailbox returned can be cloned and send to other threads.
     pub fn mailbox(&self) -> Mailbox<Msg> {
         self.mailbox.clone()
     }
