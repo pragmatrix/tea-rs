@@ -62,8 +62,7 @@ where
         for f in cmd.unpack() {
             let mailbox = self.mailbox.clone();
             let async_fn = move || {
-                let r = f();
-                mailbox.post(r);
+                mailbox.post(f());
             };
             self.executor.spawn(Box::new(async_fn));
         }

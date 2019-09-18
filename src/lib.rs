@@ -34,7 +34,7 @@ impl Default for ThreadSpawnExecutor {
 }
 
 impl Executor for ThreadSpawnExecutor {
-    fn spawn(&mut self, f: Box<dyn Fn() + Send>) {
+    fn spawn(&mut self, f: Box<dyn FnOnce() + Send>) {
         let _jh = thread::spawn(move || f());
     }
 }

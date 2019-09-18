@@ -2,13 +2,13 @@
 /// TODO: can we make the internal cases private so that we can unpack it when necessary?
 pub enum Cmd<M> {
     None,
-    Fn(Box<dyn Fn() -> M + Send>),
+    Fn(Box<dyn FnOnce() -> M + Send>),
     Batch(Vec<Cmd<M>>),
 }
 
 impl<F, M> From<F> for Cmd<M>
 where
-    F: Fn() -> M + 'static + Send,
+    F: FnOnce() -> M + 'static + Send,
     M: 'static,
 {
     fn from(f: F) -> Self {
@@ -21,7 +21,7 @@ where
     M: 'static,
 {
     // TODO: can we make f / F non-Send?
-    pub fn map<M2>(self, f: impl Fn(M) -> M2 + 'static + Send + Clone) -> Cmd<M2>
+    pub fn map<M2>(self, f: impl FnOnce(M) -> M2 + 'static + Send + Clone) -> Cmd<M2>
     where
         M2: 'static,
     {
@@ -32,8 +32,8 @@ where
         }
     }
 
-    pub(crate) fn unpack(self) -> Vec<Box<dyn Fn() -> M + Send>> {
-        fn unpack<M>(cmd: Cmd<M>, v: &mut Vec<Box<dyn Fn() -> M + Send>>) {
+    pub(crate) fn unpack(self) -> Vec<Box<dyn FnOnce() -> M + Send>> {
+        fn unpack<M>(cmd: Cmd<M>, v: &mut Vec<Box<dyn FnOnce() -> M + Send>>) {
             match cmd {
                 Cmd::None => {}
                 Cmd::Fn(fe) => v.push(fe),
