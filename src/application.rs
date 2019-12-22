@@ -73,4 +73,9 @@ where
     pub fn model(&self) -> &M {
         &self.model
     }
+
+    /// The current model of the application.
+    pub fn model_mut(&mut self) -> &mut M {
+        &mut self.model
+    }
 }
