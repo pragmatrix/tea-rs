@@ -1,9 +1,17 @@
+use std::iter::FromIterator;
+
 /// A command that runs asynchronously and sends back an event to the application.
 /// TODO: can we make the internal cases private so that we can unpack it when necessary?
 pub enum Cmd<M> {
     None,
     Fn(Box<dyn FnOnce() -> M + Send>),
     Batch(Vec<Cmd<M>>),
+}
+
+impl<M: 'static> FromIterator<Cmd<M>> for Cmd<M> {
+    fn from_iter<T: IntoIterator<Item = Cmd<M>>>(iter: T) -> Self {
+        Cmd::Batch(iter.into_iter().collect()).simplify()
+    }
 }
 
 impl<F, M> From<F> for Cmd<M>
@@ -44,6 +52,16 @@ where
         let mut v = Vec::new();
         unpack(self, &mut v);
         v
+    }
+
+    fn simplify(self) -> Self {
+        match self {
+            Cmd::None => self,
+            Cmd::Fn(_) => self,
+            Cmd::Batch(cmds) if cmds.is_empty() => Cmd::None,
+            Cmd::Batch(mut cmds) if cmds.len() == 1 => cmds.swap_remove(0),
+            _ => self,
+        }
     }
 }
 
