@@ -55,7 +55,7 @@ where
     ///
     /// This function can be used to schedule asynchronous commands.
     ///
-    /// This function's self reference is mutable, because it needs the
+    /// The returned self reference is mutable because it needs the
     /// executor that runs the command to be mutable.
     // TODO: can we remove the mutability here and from the executor?
     pub fn schedule(&mut self, cmd: Cmd<Msg>) -> &mut Self {
